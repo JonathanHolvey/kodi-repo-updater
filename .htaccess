@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteBase /keystore/
+
+RewriteRule ^secrets.json - [R=401]
