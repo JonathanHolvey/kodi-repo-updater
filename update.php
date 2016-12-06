@@ -47,12 +47,10 @@
 	$addon_zip = new ZipArchive;
 	if ($addon_zip->open($zip_path) !== true)
 		respond("The zip file could not be opened", 400);
-	else {
-		// Rename the root folder within the zip archive
-		for ($i = 0; $i < $addon_zip->numFiles; $i++) {
-			$new_name = preg_replace("/^[^\/]+/", $addon_id, $addon_zip->getNameIndex($i));
-			$addon_zip->renameIndex($i, $new_name);
-		}
+	// Rename the root folder within the zip archive
+	for ($i = 0; $i < $addon_zip->numFiles; $i++) {
+		$new_name = preg_replace("/^[^\/]+/", $addon_id, $addon_zip->getNameIndex($i));
+		$addon_zip->renameIndex($i, $new_name);
 	}
 
 	respond("Thanks! $addon_id v$version was cached successfully", 200);
