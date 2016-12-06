@@ -1,5 +1,27 @@
 <?php
-	$payload = json_decode(file_get_contents("php://input"), $assoc=true);
+	// Timing attack safe string comparison for PHP < 5.6
+	if (!function_exists("hash_equals")) {
+		function hash_equals($a, $b) {
+		    return substr_count($a ^ $b, "\0") * 2 === strlen($a . $b);
+		}
+	}
+
+	// Return a HTTP response code and message, and quit
+	function respond($message, $code) {
+		http_response_code($code);
+		echo($message);
+		die();
+	}
+
+	$body = file_get_contents("php://input");
+	$payload = json_decode($body, $assoc=true);
+	$addon_id = $payload["repository"]["name"];
+	
+	// Verify webhook secret
+	$secret = json_decode(file_get_contents("secrets.json"), $assoc=true)[$addon_id];
+	$signature = $_SERVER["HTTP_X_HUB_SIGNATURE"];
+	if (!hash_equals("sha1=" . hash_hmac("sha1", $body, $secret), $signature))
+		respond("The webhook secret could not be verified", 403);
 
 	// Check for pre-release versions
 	if ($payload["release"]["prerelease"] === true)
@@ -9,7 +31,6 @@
 		respond("The release tag format doesn't conform to semantic versioning", 400);
 
 	$version = $match[1];
-	$addon_id = $payload["repository"]["name"];
 	$zip_url = $payload["release"]["zipball_url"];
 
 	// Create addon directory
@@ -35,11 +56,4 @@
 	}
 
 	respond("Thanks! $addon_id v$version was cached successfully", 200);
-
-	// Return a HTTP response code and message, and quit
-	function respond(str $message, int $code) {
-		http_response_code($code);
-		echo($message);
-		die();
-	}
 ?>
