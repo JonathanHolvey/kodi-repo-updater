@@ -1,8 +1,11 @@
 <?php
 	$payload = json_decode(file_get_contents("php://input"), $assoc=true);
 
+	// Check for pre-release versions
+	if ($payload["release"]["prerelease"] === true)
+		echo("Skipping pre-release");
 	// Check for correct version number format
-	if (!preg_match("/^v?(\d+\.\d+\.\d+)$/", $payload["release"]["tag_name"], $match))
+	else if (!preg_match("/^v?(\d+\.\d+\.\d+)$/", $payload["release"]["tag_name"], $match))
 		echo("The release tag format doesn't conform to semantic versioning");
 	else {
 		$version = $match[1];
@@ -22,5 +25,16 @@
 		}
 		else
 			echo("The release could not be retrieved");
+
+		$addon_zip = new ZipArchive;
+		if ($addon_zip->open($zip_path) === true) {
+			// Rename the root folder within the zip archive
+			for ($i = 0; $i < $addon_zip->numFiles; $i++) {
+				$new_name = preg_replace("/^[^\/]+/", $addon_id, $addon_zip->getNameIndex($i));
+				$addon_zip->renameIndex($i, $new_name);
+			}
+		}
+		else
+			echo("The zip file could not be opened");
 	}
 ?>
