@@ -13,6 +13,20 @@
 		die();
 	}
 
+	// Function to append one SimpleXMLElement into another
+	function mergeXML(&$base, $add) { 
+		if ($add->count() != 0)
+			$new = $base->addChild($add->getName());
+		else 
+			$new = $base->addChild($add->getName(), $add);
+		foreach ($add->attributes() as $a => $b)
+			$new->addAttribute($a, $b);
+		if ($add->count() != 0) { 
+			foreach ($add->children() as $child) 
+			    mergeXML($new, $child);
+		} 
+	}
+ 
 	$body = file_get_contents("php://input");
 	$payload = json_decode($body, $assoc=true);
 	$addon_id = $payload["repository"]["name"];
@@ -52,6 +66,24 @@
 		$new_name = preg_replace("/^[^\/]+/", $addon_id, $addon_zip->getNameIndex($i));
 		$addon_zip->renameIndex($i, $new_name);
 	}
+
+	$addon_xml = simplexml_load_string($addon_zip->getFromName("$addon_id/addon.xml"));
+	// Check addon ID and version in XML file
+	if ($addon_xml->attributes()->version != $version)
+		respond("Addon version doesn't match release tag", 400);
+	if ($addon_xml->attributes()->id != $addon_id)
+		respond("Addon ID doesn't match repository name", 400);
+
+	if (is_file("addons.xml"))
+		$repo_xml = simplexml_load_file("addons.xml");
+	else
+		$repo_xml = new SimpleXMLElement("<addons/>");
+
+	// Remove old XML node from repository and append new one
+	unset($repo_xml->xpath("addon[id='$addon_id']")[0][0]);
+	mergeXML($repo_xml, $addon_xml);
+
+	$repo_xml->asXML("addons.xml");
 
 	respond("Thanks! $addon_id v$version was cached successfully", 200);
 ?>
