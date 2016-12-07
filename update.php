@@ -85,5 +85,6 @@
 
 	$repo_xml->asXML("addons.xml");
 
-	respond("Thanks! $addon_id v$version was cached successfully", 200);
+	$name = $addon_xml->attributes()->name;
+	respond("Thanks! $name v$version was cached successfully", 200);
 ?>
