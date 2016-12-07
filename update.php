@@ -80,7 +80,7 @@
 		$repo_xml = new SimpleXMLElement("<addons/>");
 
 	// Remove old XML node from repository and append new one
-	unset($repo_xml->xpath("addon[id='$addon_id']")[0][0]);
+	unset($repo_xml->xpath("addon[@id='$addon_id']")[0][0]);
 	mergeXML($repo_xml, $addon_xml);
 
 	$repo_xml->asXML("addons.xml");
