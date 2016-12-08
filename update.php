@@ -68,11 +68,28 @@
 	}
 
 	$addon_xml = simplexml_load_string($addon_zip->getFromName("$addon_id/addon.xml"));
+
 	// Check addon ID and version in XML file
 	if ($addon_xml->attributes()->version != $version)
 		respond("Addon version doesn't match release tag", 400);
 	if ($addon_xml->attributes()->id != $addon_id)
 		respond("Addon ID doesn't match repository name", 400);
+
+	// Create list of asset files to extract
+	$assets = ["icon.png", "fanart.jpg", "changelog-$version.txt"];
+	foreach ($addon_xml->xpath("/addon/extension[@point='xbmc.addon.metadata']/assets/*") as $asset)
+		$assets[] = (string)$asset;
+
+	// Extract addon asset files from zip
+	foreach ($assets as $asset) {
+		$contents = $addon_zip->getFromName("$addon_id/$asset");
+		if ($contents !== false) {
+			$asset_path = "addons/$addon_id/$asset";
+			if (!file_exists(dirname($asset_path)))
+				mkdir(dirname($asset_path), $mode=0777, $recursive=true);
+			file_put_contents($asset_path, $contents);
+		}
+	}
 
 	if (is_file("addons.xml"))
 		$repo_xml = simplexml_load_file("addons.xml");
@@ -82,7 +99,6 @@
 	// Remove old XML node from repository and append new one
 	unset($repo_xml->xpath("addon[@id='$addon_id']")[0][0]);
 	mergeXML($repo_xml, $addon_xml);
-
 	$repo_xml->asXML("addons.xml");
 
 	$name = $addon_xml->attributes()->name;
