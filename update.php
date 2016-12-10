@@ -43,6 +43,16 @@
 	$body = file_get_contents("php://input");
 	$payload = json_decode($body, $assoc=true);
 	$addon_id = $payload["repository"]["name"];
+
+	// Send response on webhook setup
+	if ($_SERVER["HTTP_X_GITHUB_EVENT"] == "ping") {
+		if (in_array("release", $payload["hook"]["events"]))
+			respond("Release webhook ping recieved successfully", 200);
+		else
+			respond("The webhook isn't configured to trigger on the release event");
+	}
+	else if ($_SERVER["HTTP_X_GITHUB_EVENT"] != "release")
+		respond("This URL only accepts the release webhook event", 405);
 	
 	// Verify webhook secret
 	$secret = json_decode(file_get_contents("secrets.json"), $assoc=true)[$addon_id];
