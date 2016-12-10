@@ -90,7 +90,7 @@
 
 	// Delete old asset files
 	foreach(array_diff(scandir("addons/$addon_id"), [".", ".."]) as $path) {
-		if (!preg_match("/\.zip$/", $path))
+		if (!preg_match("/\.zip(\.md5)?$/", $path))
 			delete("addons/$addon_id/$path");
 	}
 
@@ -116,6 +116,10 @@
 	unset($repo_xml->xpath("addon[@id='$addon_id']")[0][0]);
 	mergeXML($repo_xml, $addon_xml);
 	$repo_xml->asXML("addons.xml");
+
+	// Create checksums of modified files
+	file_put_contents("addons.xml.md5", md5_file("addons.xml"));
+	file_put_contents($zip_path . ".md5", md5_file($zip_path));
 
 	$name = $addon_xml->attributes()->name;
 	respond("Thanks! $name v$version was cached successfully", 200);
