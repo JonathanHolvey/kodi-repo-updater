@@ -26,6 +26,19 @@
 			    mergeXML($new, $child);
 		} 
 	}
+
+	// Recursively delete directories and files
+	function delete($path) {
+		if (is_dir($path)) {
+			foreach (array_diff(scandir($path), [".", ".."]) as $object) {
+				delete($path . "/" . $object);
+			}
+			rmdir($path);
+		}
+		else
+			unlink($path);
+	}
+
  
 	$body = file_get_contents("php://input");
 	$payload = json_decode($body, $assoc=true);
@@ -74,6 +87,12 @@
 		respond("Addon version doesn't match release tag", 400);
 	if ($addon_xml->attributes()->id != $addon_id)
 		respond("Addon ID doesn't match repository name", 400);
+
+	// Delete old asset files
+	foreach(array_diff(scandir("addons/$addon_id"), [".", ".."]) as $path) {
+		if (!preg_match("/\.zip$/", $path))
+			delete("addons/$addon_id/$path");
+	}
 
 	// Create list of asset files to extract
 	$assets = ["icon.png", "fanart.jpg", "changelog-$version.txt"];
