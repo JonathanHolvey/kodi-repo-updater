@@ -91,10 +91,7 @@
 		}
 	}
 
-	if (is_file("addons.xml"))
-		$repo_xml = simplexml_load_file("addons.xml");
-	else
-		$repo_xml = new SimpleXMLElement("<addons/>");
+	$repo_xml = is_file("addons.xml") ? simplexml_load_file("addons.xml"): new SimpleXMLElement("<addons/>");
 
 	// Remove old XML node from repository and append new one
 	unset($repo_xml->xpath("addon[@id='$addon_id']")[0][0]);
