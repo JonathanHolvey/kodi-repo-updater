@@ -49,6 +49,8 @@ When you're ready to publish or update your addon, tag it with the new version n
 
 The addon will be automatically copied to your repository web server, and recorded in the file `addons.xml`.
 
+*Note: Pre-release versions will be skipped automatically*
+
 ### Publishing a link
 
 The file `latest.php` can be used as a static link to the latest version of a particular addon zip file. This will save you having to update links every time you publish a new version of an addon. Just provide the addon ID as a parameter in the URL:
