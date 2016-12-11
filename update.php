@@ -49,7 +49,7 @@
 		if (in_array("release", $payload["hook"]["events"]))
 			respond("Release webhook ping recieved successfully", 200);
 		else
-			respond("The webhook isn't configured to trigger on the release event");
+			respond("The webhook isn't configured to trigger on the release event", 400);
 	}
 	else if ($_SERVER["HTTP_X_GITHUB_EVENT"] != "release")
 		respond("This URL only accepts the release webhook event", 405);
