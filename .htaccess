@@ -1,4 +1,5 @@
 RewriteEngine On
-RewriteBase /keystore/
+RewriteBase /kodi-repo/
 
 RewriteRule ^secrets.json - [R=401]
+RewriteRule ^(.+)\.md5$ checksum.php?f=$1 [NC,L]

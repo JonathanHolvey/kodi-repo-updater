@@ -127,10 +127,6 @@
 	mergeXML($repo_xml, $addon_xml);
 	$repo_xml->asXML("addons.xml");
 
-	// Create checksums of modified files
-	file_put_contents("addons.xml.md5", md5_file("addons.xml"));
-	file_put_contents($zip_path . ".md5", md5_file($zip_path));
-
 	$name = $addon_xml->attributes()->name;
 	respond("Thanks! $name v$version was cached successfully", 200);
 ?>
