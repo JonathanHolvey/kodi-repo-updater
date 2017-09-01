@@ -41,7 +41,7 @@
 
  
 	$body = file_get_contents("php://input");
-	$payload = json_decode($body, $assoc=true);
+	$payload = json_decode($body, true);
 	$addon_id = $payload["repository"]["name"];
 
 	// Send response on webhook setup
@@ -55,7 +55,7 @@
 		respond("This URL only accepts the release webhook event", 405);
 	
 	// Verify webhook secret
-	$secret = json_decode(file_get_contents("secrets.json"), $assoc=true)[$addon_id];
+	$secret = json_decode(file_get_contents("secrets.json"), true)[$addon_id];
 	$signature = $_SERVER["HTTP_X_HUB_SIGNATURE"];
 	if (!hash_equals("sha1=" . hash_hmac("sha1", $body, $secret), $signature))
 		respond("The webhook secret could not be verified", 403);
